@@ -23,23 +23,23 @@ if __name__ == '__main__':
         file.write(response.content)
     tree = ET.parse('universe.xml')
     root = tree.getroot()
-    open_coords = []
-    for galaxy in range(1, args.galaxy_num + 1):
-        for system in range(1, 500):
-            for position in range(1, 16):
-                if (args.galaxy is None or args.galaxy == galaxy) and (args.system is None or args.system == system) and (args.position is None or args.position == position):
-                    open_coords.append(f"{galaxy}:{system}:{position}")
-    for planet in root.findall('planet'):
-        coords = planet.get("coords")
-        coord_list = coords.split(":")
-        if (args.galaxy is None or int(coord_list[-3]) == args.galaxy) and (args.system is None or int(coord_list[-2]) == args.system) and (args.position is None or int(coord_list[-1]) == args.position):
-            open_coords.remove(coords)
     timestamp = datetime.utcfromtimestamp(int(root.get('timestamp'))).strftime('%d.%m.%Y %H:%M:%S Uhr')
     with open('timestamp.txt', 'rt') as file:
         old_timestamp = file.read()
     if timestamp != old_timestamp:
         with open('timestamp.txt', 'wt') as file:
             file.write(timestamp)
+        open_coords = []
+        for galaxy in range(1, args.galaxy_num + 1):
+            for system in range(1, 500):
+                for position in range(1, 16):
+                    if (args.galaxy is None or args.galaxy == galaxy) and (args.system is None or args.system == system) and (args.position is None or args.position == position):
+                        open_coords.append(f"{galaxy}:{system}:{position}")
+        for planet in root.findall('planet'):
+            coords = planet.get("coords")
+            coord_list = coords.split(":")
+            if (args.galaxy is None or int(coord_list[-3]) == args.galaxy) and (args.system is None or int(coord_list[-2]) == args.system) and (args.position is None or int(coord_list[-1]) == args.position):
+                open_coords.remove(coords)
         webhook = SyncWebhook.from_url(os.environ.get("DISCORD_WEBHOOK"))
         message = f"<@&1250104300550492210>\nFreie 8er {timestamp}"
         for coord in open_coords:
