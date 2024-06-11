@@ -1,3 +1,4 @@
 *.xml
 *.env
 timestamp.txt
+env/*
