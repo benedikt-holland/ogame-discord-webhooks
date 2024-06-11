@@ -34,9 +34,14 @@ if __name__ == '__main__':
         coord_list = coords.split(":")
         if (args.galaxy is None or int(coord_list[-3]) == args.galaxy) and (args.system is None or int(coord_list[-2]) == args.system) and (args.position is None or int(coord_list[-1]) == args.position):
             open_coords.remove(coords)
-    timestamp = datetime.utcfromtimestamp(int(root.get('timestamp'))).strftime('%Y-%m-%d %H:%M:%S')
-    with open('timestamp.txt', 'wb') as file:
-        if timestamp != file.read():
+    timestamp = datetime.utcfromtimestamp(int(root.get('timestamp'))).strftime('%d.%m.%Y %H:%M:%S Uhr')
+    with open('timestamp.txt', 'rt') as file:
+        old_timestamp = file.read()
+    if timestamp != old_timestamp:
+        with open('timestamp.txt', 'wt') as file:
             file.write(timestamp)
-            webhook = SyncWebhook.from_url(os.environ.get("DISCORD_WEBHOOK"))
-            webhook.send(f"{timestamp}\n{coord_list}")
+        webhook = SyncWebhook.from_url(os.environ.get("DISCORD_WEBHOOK"))
+        message = f"<@&1250104300550492210>\nFreie 8er {timestamp}"
+        for coord in open_coords:
+            message += f"\n- {coord}"
+        webhook.send(message)
