@@ -5,6 +5,7 @@ import argparse
 from discord import SyncWebhook
 from dotenv import load_dotenv
 import os
+from dateutil.tz import tzlocal
 
 
 if __name__ == '__main__':
@@ -16,6 +17,7 @@ if __name__ == '__main__':
     parser.add_argument("-s", "--system", default=None, type=int)
     parser.add_argument("-p", "--position", default=None, type=int)
     parser.add_argument("-n", "--galaxy-num", default=8, type=int)
+    parser.add_argument("-de", "--debug", action='store_true', default=False)
     args = parser.parse_args()
     url = f"https://s{args.universe}-{args.domain}.ogame.gameforge.com/api/universe.xml"
     response = requests.get(url)
@@ -23,10 +25,10 @@ if __name__ == '__main__':
         file.write(response.content)
     tree = ET.parse('universe.xml')
     root = tree.getroot()
-    timestamp = datetime.utcfromtimestamp(int(root.get('timestamp'))).strftime('%d.%m.%Y %H:%M:%S Uhr')
+    timestamp = datetime.fromtimestamp(int(root.get('timestamp'))).astimezone(tzlocal()).strftime('%d.%m.%Y %H:%M:%S Uhr')
     with open('timestamp.txt', 'rt') as file:
         old_timestamp = file.read()
-    if timestamp != old_timestamp:
+    if args.debug or timestamp != old_timestamp:
         with open('timestamp.txt', 'wt') as file:
             file.write(timestamp)
         open_coords = []
@@ -44,4 +46,7 @@ if __name__ == '__main__':
         message = f"<@&1250104300550492210>\nFreie 8er {timestamp}"
         for coord in open_coords:
             message += f"\n- {coord}"
-        webhook.send(message)
+        if args.debug:
+            print(message)
+        else:
+            webhook.send(message)
