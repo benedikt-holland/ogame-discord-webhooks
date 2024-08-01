@@ -43,7 +43,11 @@ if __name__ == '__main__':
             if (args.galaxy is None or int(coord_list[-3]) == args.galaxy) and (args.system is None or int(coord_list[-2]) == args.system) and (args.position is None or int(coord_list[-1]) == args.position):
                 open_coords.remove(coords)
         webhook = SyncWebhook.from_url(os.environ.get("DISCORD_WEBHOOK"))
-        message = f"<@&1250104300550492210>\nFreie 8er {timestamp}"
+        if len(open_coords) > 0:
+            message = "<@&1250104300550492210>\n"
+        else:
+            message = "Keine "
+        message += f"Freie 8er {timestamp}"
         for coord in open_coords:
             message += f"\n- {coord}"
         if args.debug:
