@@ -18,18 +18,22 @@ if __name__ == '__main__':
     parser.add_argument("-p", "--position", default=None, type=int)
     parser.add_argument("-n", "--galaxy-num", default=8, type=int)
     parser.add_argument("-de", "--debug", action='store_true', default=False)
+    parser.add_argument("-w", "--webhook", type=str, required=True)
+    parser.add_argument("-t", "--tag", type=str)
     args = parser.parse_args()
     url = f"https://s{args.universe}-{args.domain}.ogame.gameforge.com/api/universe.xml"
     response = requests.get(url)
-    with open('universe.xml', 'wb') as file:
+    filename = f'universe.xml'
+    with open(filename, 'wb') as file:
         file.write(response.content)
-    tree = ET.parse('universe.xml')
+    tree = ET.parse(filename)
     root = tree.getroot()
     timestamp = datetime.fromtimestamp(int(root.get('timestamp'))).astimezone(tzlocal()).strftime('%d.%m.%Y %H:%M:%S Uhr')
-    with open('timestamp.txt', 'rt') as file:
+    timestamp_filename = f'timestamp{args.universe}.txt'
+    with open(timestamp_filename, 'rt') as file:
         old_timestamp = file.read()
     if args.debug or timestamp != old_timestamp:
-        with open('timestamp.txt', 'wt') as file:
+        with open(timestamp_filename, 'wt') as file:
             file.write(timestamp)
         open_coords = []
         for galaxy in range(1, args.galaxy_num + 1):
@@ -42,9 +46,9 @@ if __name__ == '__main__':
             coord_list = coords.split(":")
             if (args.galaxy is None or int(coord_list[-3]) == args.galaxy) and (args.system is None or int(coord_list[-2]) == args.system) and (args.position is None or int(coord_list[-1]) == args.position):
                 open_coords.remove(coords)
-        webhook = SyncWebhook.from_url(os.environ.get("DISCORD_WEBHOOK"))
-        if len(open_coords) > 0:
-            message = "<@&1250104300550492210>\n"
+        webhook = SyncWebhook.from_url(args.webhook)
+        if len(open_coords) > 0 and args.tag is not None:
+            message = args.tag + "\n"
         else:
             message = "Keine "
         message += f"Freie 8er {timestamp}"
