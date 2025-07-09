@@ -3,12 +3,10 @@ import xml.etree.ElementTree as ET
 from datetime import datetime
 import argparse
 from discord import SyncWebhook
-from dotenv import load_dotenv
 from dateutil.tz import tzlocal
 
 
 if __name__ == '__main__':
-    load_dotenv()
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--domain", default="de", type=str)
     parser.add_argument("-u", "--universe", default=199, type=int)
