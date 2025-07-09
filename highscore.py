@@ -14,7 +14,7 @@ if __name__ == '__main__':
     for table in ["players", "alliances", "highscore"]:
         url = f"https://s{args.universe}-{args.domain}.ogame.gameforge.com/api/{table}.xml"
         if table == "highscore":
-            url += "?category=1&type=1"
+            url += "?category=1&type=0"
         response = requests.get(url)
         filename = f'{table}.xml'
         with open(filename, 'wb') as file:
