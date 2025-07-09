@@ -2,4 +2,5 @@
 *.env
 *.txt
 env/*
+.venv/
 *.bash
