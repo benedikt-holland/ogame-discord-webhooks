@@ -4,3 +4,5 @@
 env/*
 .venv/
 *.bash
+__pycache__/
+*.csv
