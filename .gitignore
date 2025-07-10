@@ -6,3 +6,4 @@ env/*
 *.bash
 __pycache__/
 *.csv
+.vscode/
