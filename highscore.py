@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import argparse
 from discord import SyncWebhook
+from os.path import exists
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()        
@@ -10,11 +11,12 @@ if __name__ == '__main__':
     parser.add_argument("-n", "--alliance-name", type=str)
     parser.add_argument("-t", "--alliance-tag", type=str)
     parser.add_argument("-w", "--webhook", type=str)
+    parser.add_argument("-c", "--score-category", default=0, type=int, choices=range(8), help="Total, Economy, Research, Military, Military Built, Military Destroyed, Military Lost, Honor")
     args = parser.parse_args()
     for table in ["players", "alliances", "highscore"]:
         url = f"https://s{args.universe}-{args.domain}.ogame.gameforge.com/api/{table}.xml"
         if table == "highscore":
-            url += "?category=1&type=0"
+            url += f"?category=1&type={args.score_category}"
         response = requests.get(url)
         filename = f'{table}.xml'
         with open(filename, 'wb') as file:
@@ -31,13 +33,16 @@ if __name__ == '__main__':
     players = players[players.alliance == alliance_id].join(highscore.set_index("id"), on="id")
     players["date"] = pd.Timestamp.today().date()
     players = players.drop(["id", "alliance"], axis=1)
-    players.to_csv("highscore.csv", mode="a", header=None, index=None)
+    players["category"] = args.score_category
+    players[["name","status","position","score","date","category"]].to_csv("highscore.csv", mode="a", header=None if exists("highscore.csv") else ["name","status","position","score","date","category"], index=None)
     history = pd.read_csv("highscore.csv")
+    history = history[history["category"] == args.score_category]
     history = history.sort_values(["name", "date"])
     history = history.join(history[["position", "score"]].shift(), rsuffix="_prev")
     for col in ["score", "position"]:
         history[f"{col}_diff"] = history[col]-history[f"{col}_prev"]
     history["score_rel"] = (history["score"]-history["score_prev"]) / history["score_prev"] * 100
+    history.dropna(inplace=True, axis=0)
     history = history.groupby("name").last().reset_index()
     history = history.sort_values("score_rel", ascending=False)
     history["position_diff"] = (history["position_diff"] * -1).astype(int)
