@@ -12,6 +12,7 @@ if __name__ == '__main__':
     parser.add_argument("-t", "--alliance-tag", type=str)
     parser.add_argument("-w", "--webhook", type=str)
     parser.add_argument("-c", "--score-category", default=0, type=int, choices=range(8), help="Total, Economy, Research, Military, Military Built, Military Destroyed, Military Lost, Honor")
+    parser.add_argument("-s", "--no-store", action='store_true', default=False)
     args = parser.parse_args()
     for table in ["players", "alliances", "highscore"]:
         url = f"https://s{args.universe}-{args.domain}.ogame.gameforge.com/api/{table}.xml"
@@ -34,7 +35,8 @@ if __name__ == '__main__':
     players["date"] = pd.Timestamp.today().date()
     players = players.drop(["id", "alliance"], axis=1)
     players["category"] = args.score_category
-    players[["name","status","position","score","date","category"]].to_csv("highscore.csv", mode="a", header=None if exists("highscore.csv") else ["name","status","position","score","date","category"], index=None)
+    if not args.no_store:
+        players[["name","status","position","score","date","category"]].to_csv("highscore.csv", mode="a", header=None if exists("highscore.csv") else ["name","status","position","score","date","category"], index=None)
     history = pd.read_csv("highscore.csv")
     history = history[history["category"] == args.score_category]
     history = history.sort_values(["name", "date"])
@@ -43,12 +45,13 @@ if __name__ == '__main__':
         history[f"{col}_diff"] = history[col]-history[f"{col}_prev"]
     history["score_rel"] = (history["score"]-history["score_prev"]) / history["score_prev"] * 100
     history = history.groupby("name").last().reset_index()
-    history = history.sort_values("score_rel", ascending=False)
+    history = history.sort_values(["score_rel", "position_diff"], ascending=[False, True])
     history["position_diff"] = (history["position_diff"] * -1).astype(int)
     history["position_diff"] = history["position_diff"].apply(lambda x: f"{x:.0f}")
     history["score"] = history["score"].apply(lambda x: f"{x/1000000:,.0f}kk")
     history["score_diff"] = history["score_diff"].apply(lambda x: f"{x/1000000:,.0f}kk")
     history["score_rel"] = history["score_rel"].apply(lambda x: f"{x:.2f}%")
+    history["name"] = history["name"].apply(lambda x: str(x)[:10])
     history.rename({"name": "Spieler", "position": "Platz", "position_diff": "Δ#", "score": "Punkte", "score_diff": "Δ", "score_rel": "%"}, axis=1, inplace=True)
     table_text = history[["Spieler", "Platz", "Δ#", "Punkte", "Δ", "%"]].to_string(index=False)
     message = f"```{table_text}```"
