@@ -42,7 +42,6 @@ if __name__ == '__main__':
     for col in ["score", "position"]:
         history[f"{col}_diff"] = history[col]-history[f"{col}_prev"]
     history["score_rel"] = (history["score"]-history["score_prev"]) / history["score_prev"] * 100
-    history.dropna(inplace=True, axis=0)
     history = history.groupby("name").last().reset_index()
     history = history.sort_values("score_rel", ascending=False)
     history["position_diff"] = (history["position_diff"] * -1).astype(int)
