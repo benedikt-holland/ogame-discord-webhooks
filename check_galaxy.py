@@ -25,7 +25,7 @@ if __name__ == '__main__':
     root = tree.getroot()
     timestamp = datetime.fromtimestamp(int(root.get('timestamp'))).astimezone(tzlocal()).strftime('%d.%m.%Y %H:%M:%S Uhr')
     timestamp_filename = f'timestamp{args.universe}.txt'
-    with open(timestamp_filename, 'w+') as file:
+    with open(timestamp_filename, 'r+') as file:
         old_timestamp = file.read()
         if not args.webhook or timestamp != old_timestamp:
             file.write(timestamp)
