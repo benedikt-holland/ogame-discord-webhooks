@@ -28,7 +28,7 @@ if __name__ == '__main__':
     with open(timestamp_filename, 'r') as file:
         old_timestamp = file.read()
     if not args.webhook or timestamp != old_timestamp:
-        with open(timestamp_filename, "w"):
+        with open(timestamp_filename, "w") as file:
             file.write(timestamp)
         open_coords = []
         galaxies = []

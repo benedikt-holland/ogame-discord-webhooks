@@ -50,7 +50,7 @@ if __name__ == '__main__':
     history["position_diff"] = history["position_diff"].apply(lambda x: f"{x:.0f}")
     history["score"] = history["score"].apply(lambda x: f"{x/1000000:,.0f}kk")
     history["score_diff"] = history["score_diff"].apply(lambda x: f"{x/1000000:,.0f}kk")
-    history["score_rel"] = history["score_rel"].apply(lambda x: f"{x:.2f}%")
+    history["score_rel"] = history["score_rel"].apply(lambda x: f"{x:.1f}%")
     history["name"] = history["name"].apply(lambda x: str(x)[:10])
     history.rename({"name": "Spieler", "position": "Platz", "position_diff": "Δ#", "score": "Punkte", "score_diff": "Δ", "score_rel": "%"}, axis=1, inplace=True)
     table_text = history[["Spieler", "Platz", "Δ#", "Punkte", "Δ", "%"]].to_string(index=False)
