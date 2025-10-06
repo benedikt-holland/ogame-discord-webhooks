@@ -4,7 +4,7 @@ from datetime import datetime
 import argparse
 from discord import SyncWebhook
 from dateutil.tz import tzlocal
-
+import os
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -25,8 +25,11 @@ if __name__ == '__main__':
     root = tree.getroot()
     timestamp = datetime.fromtimestamp(int(root.get('timestamp'))).astimezone(tzlocal()).strftime('%d.%m.%Y %H:%M:%S Uhr')
     timestamp_filename = f'timestamp{args.universe}.txt'
-    with open(timestamp_filename, 'r') as file:
-        old_timestamp = file.read()
+    if os.path.isfile(timestamp_filename):
+        with open(timestamp_filename, 'r') as file:
+            old_timestamp = file.read()
+    else:
+        old_timestamp = datetime.fromtimestamp(0)
     if not args.webhook or timestamp != old_timestamp:
         with open(timestamp_filename, "w") as file:
             file.write(timestamp)
