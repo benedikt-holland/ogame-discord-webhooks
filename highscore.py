@@ -38,6 +38,9 @@ if __name__ == '__main__':
     if not args.no_store:
         players[["name","status","position","score","date","category"]].to_csv("highscore.csv", mode="a", header=None if exists("highscore.csv") else ["name","status","position","score","date","category"], index=None)
     history = pd.read_csv("highscore.csv")
+    history = history[history.name.isin(players.name)]  
+    counts = history.groupby("name").count() > 1
+    history = history[history.name.isin(counts[counts].index)]  
     history = history[history["category"] == args.score_category]
     history = history.sort_values(["name", "date"])
     history = history.join(history[["position", "score"]].shift(), rsuffix="_prev")
@@ -51,7 +54,7 @@ if __name__ == '__main__':
     history["score"] = history["score"].apply(lambda x: f"{x/1000000:,.0f}kk")
     history["score_diff"] = history["score_diff"].apply(lambda x: f"{x/1000000:,.0f}kk")
     history["score_rel"] = history["score_rel"].apply(lambda x: f"{x:.1f}%")
-    history["name"] = history["name"].apply(lambda x: str(x)[:10])
+    history["name"] = history["name"].apply(lambda x: str(x)[:9])
     history.rename({"name": "Spieler", "position": "Platz", "position_diff": "Δ#", "score": "Punkte", "score_diff": "Δ", "score_rel": "%"}, axis=1, inplace=True)
     table_text = history[["Spieler", "Platz", "Δ#", "Punkte", "Δ", "%"]].to_string(index=False)
     message = f"```{table_text}```"
