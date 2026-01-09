@@ -38,8 +38,8 @@ if __name__ == '__main__':
     if not args.no_store:
         players[["name","status","position","score","date","category","id"]].to_csv("highscore.csv", mode="a", header=None if exists("highscore.csv") else ["name","status","position","score","date","category","id"], index=None)
     history = pd.read_csv("highscore.csv")
-    history = history[history.id.isin(players.id)]  
-    counts = history.groupby("id").count() > 1
+    history = history[history.id.isin(players.id)] # Remove players that left the alliance
+    counts = history.groupby("id").count().name > 1
     history = history[history.id.isin(counts[counts].index)]  
     history = history[history["category"] == args.score_category]
     history = history.sort_values(["id", "date"])
