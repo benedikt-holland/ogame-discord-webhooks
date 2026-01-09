@@ -33,21 +33,21 @@ if __name__ == '__main__':
         parser.error("At least one of alliance-name or alliance-tag is required")
     players = players[players.alliance == alliance_id].join(highscore.set_index("id"), on="id")
     players["date"] = pd.Timestamp.today().date()
-    players = players.drop(["id", "alliance"], axis=1)
+    players = players.drop(["alliance"], axis=1)
     players["category"] = args.score_category
     if not args.no_store:
-        players[["name","status","position","score","date","category"]].to_csv("highscore.csv", mode="a", header=None if exists("highscore.csv") else ["name","status","position","score","date","category"], index=None)
+        players[["name","status","position","score","date","category","id"]].to_csv("highscore.csv", mode="a", header=None if exists("highscore.csv") else ["name","status","position","score","date","category","id"], index=None)
     history = pd.read_csv("highscore.csv")
-    history = history[history.name.isin(players.name)]  
-    counts = history.groupby("name").count() > 1
-    history = history[history.name.isin(counts[counts].index)]  
+    history = history[history.id.isin(players.id)]  
+    counts = history.groupby("id").count() > 1
+    history = history[history.id.isin(counts[counts].index)]  
     history = history[history["category"] == args.score_category]
-    history = history.sort_values(["name", "date"])
+    history = history.sort_values(["id", "date"])
     history = history.join(history[["position", "score"]].shift(), rsuffix="_prev")
     for col in ["score", "position"]:
         history[f"{col}_diff"] = history[col]-history[f"{col}_prev"]
     history["score_rel"] = (history["score"]-history["score_prev"]) / history["score_prev"] * 100
-    history = history.groupby("name").last().reset_index()
+    history = history.groupby("id").last().reset_index()
     history = history.sort_values(["score_rel", "position_diff"], ascending=[False, True])
     history["position_diff"] = (history["position_diff"] * -1).astype(int)
     history["position_diff"] = history["position_diff"].apply(lambda x: f"{x:.0f}")
